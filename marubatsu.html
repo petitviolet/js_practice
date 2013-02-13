@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <title>○×ゲーム</title>
+</head>
+<body>
+    <h1>○×ゲーム</h1>
+    <style type="text/css">
+        img{
+            margin:0px;
+            padding:0px;
+            border:0px;
+            vertical-align:bottom;
+        }
+        #restart{
+            top:0px;
+            position:relative;
+        }
+    </style>
+    <p>
+        <input type="button" id="restart" value="再試合" onclick="gameStart();"/>
+        <p id='order'/>
+        <table id="gameArea" border="2px" align="left"></table>
+    </p>
+    <script type="text/javascript">
+        var order=0; //0で○，1で×
+        var circle = '<img src="circle.png" width="69" height="69" />'
+        var cross = '<img src="cross.png" width="69" height="69" />'
+        var count = 0;
+        var MAX_COUNT = 25;
+        var row = Math.sqrt(MAX_COUNT);
+
+        //指し手による勝敗の判定
+        function checkTable(index, order){
+            // 上下左右斜めが同じマークかどうか
+            var k = parseInt(index);
+            var correct = (order==1)?'circle':'cross';
+            console.log('correct :' + correct);
+            console.log('circle?:'+$('#td_'+k).html().indexOf('circle'));
+            console.log('cross?:'+$('#td_'+k).html().indexOf('cross'));
+
+            var j = 1; // whileループ用
+            var flag = true; // 勝ちかどうか判定
+            var num = 0; // 判定の際に何個置かれていたか
+            //縦のチェック
+            while (j <= row){
+                if ((k - (row) * j) > 0){
+                    num++;
+                    if ($('#td_'+(k-(row)*j)).html().indexOf(correct) < 0) {
+                        flag = false;
+                    }
+                }
+                if ((k + (row) * j) < MAX_COUNT){
+                    num++;
+                    if ($('#td_'+(k+(row)*j)).html().indexOf(correct) < 0) {
+                        flag = false;
+                    }
+                }
+                j++;
+            }
+            if (flag && num >= row-1){
+                console.log('縦！');
+                return true;
+            }
+                
+            //横のチェック
+            j = 1;
+            flag = true;
+            num = 0;
+            while (j <= row){
+                if ((k - j) % row != 0 && (k - j) > 0) {
+                    num++;
+                    if ($('#td_'+(k-j)).html().indexOf(correct) < 0) {
+                        flag = false;
+                    }
+                }
+                if (k % row > 0 && (k + j) % row != 0 && (k + j) < MAX_COUNT) {
+                    num++;
+                    if ($('#td_'+(k+j)).html().indexOf(correct) < 0) {
+                        flag = false;
+                    }
+                }
+                j++;
+            }
+            if (flag && num >= row-1){
+                console.log('横！');
+                return true;
+            }
+            j = 1;
+            flag = true;
+            num = 0;
+
+            //斜めのチェック
+            //左上・右下のチェック
+            while (j <= row){
+                if ((k-j*(row+1)) > 0 && (k-j*(row+1)) % row != 1){
+                    num++;
+                    if ($('#td_'+(k-j*(row+1))).html().indexOf(correct) < 0) {
+                        flag = false;
+                    }
+                }
+                if ((k+j*(row+1)) < MAX_COUNT && (k+j*(row+1))%row < 0){
+                    num++;
+                    if ($('#td_'+(k+j*(row+1))).html().indexOf(correct) < 0) {
+                        flag = false;
+                    }
+                }
+                j++;
+            }
+            if (flag && num >= row-1) {
+                console.log('左上・右下！');
+                return true;
+            }
+            flag = true;
+            j = 1;
+            num = 0;
+
+            //右上・左下のチェック
+            while (j <= row){
+                if (k % row != 0 && (k-j*(row-1)) > 0 && (k-j*(row-1)) % row != 1){
+                    num++;
+                    if ($('#td_'+(k-j*(row-1))).html().indexOf(correct) < 0) {
+                        flag = false;
+                    }
+                }
+                if (k % row != 1 && (k+j*(row-1)) < MAX_COUNT && (k+j*(row-1))%row > 0){
+                    num++;
+                    if ($('#td_'+(k+j*(row-1))).html().indexOf(correct) < 0) {
+                        flag = false;
+                    }
+                }
+                j++;
+            }
+            console.log('flag:' + flag + ', num:' +num);
+            if (flag && num >= row-1){
+                console.log('右上・左下！');
+                return true;
+            }
+            return false;
+        } 
+
+        // ゲーム開始
+        function gameStart(){
+            var count = 0; // クリックした回数
+            var table = ''; // 初期table描画用
+            var result = false; // 判定の結果
+            var index; // クリックされた場所の番号
+            var finished = false; // 勝敗がついたかどうか
+            var first = (order == 0)?'○':'×'; // 先手
+            $('#order').html('先手は' + first + 'です');
+            // tableの作成
+            $('#gameArea').emtpy;
+            for (var i = 1; i <= row; i++){
+                table += '<tr id="tr_' + i + '">';
+                for (var j = row * (i - 1) + 1; j <= row * i; j++){
+                    table += '<td id="td_' + j + '" class="' + j + '"width="69px" height="69px">';
+                }
+            }
+            $('#gameArea').html(table);
+
+            // tableの各場所にclickイベント設定
+            for (var i = 1; i <= MAX_COUNT; i++){
+                $('#td_' + i).click(function(){
+                    index = $(this).attr('class');
+                    console.log('index : ' + index);
+                    if (!finished){
+                        if ($(this).html().indexOf('img') != true) {
+                            count++;
+                            console.log(count);
+                            if (order == 0){
+                                $(this).html(circle)
+                                order = 1;
+                            } else {
+                                $(this).html(cross)
+                                order = 0;
+                            }
+                        }
+                        result = checkTable(index, order);
+                        console.log(result);
+                    } else {
+                        alert('既に決着がつきました');
+                    }
+                    if (result == true && !finished){
+                        finished = true;
+                        var winner = (order==1)?'○':'×';
+                        alert(winner + 'の勝ち！');
+                        return false;
+                    }
+                    
+                    // ます目全て埋まった場合
+                    if (count == MAX_COUNT){
+                        alert('引き分け');
+                    }
+                })
+            }
+        }
+        gameStart();
+    </script>
+</body>
+</html>
