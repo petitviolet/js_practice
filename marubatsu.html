@@ -29,7 +29,7 @@
         var circle = '<img src="circle.png" width="69" height="69" />'
         var cross = '<img src="cross.png" width="69" height="69" />'
         var count = 0;
-        var MAX_COUNT = 25;
+        var MAX_COUNT = 9;
         var row = Math.sqrt(MAX_COUNT);
 
         //指し手による勝敗の判定
@@ -95,13 +95,13 @@
             //斜めのチェック
             //左上・右下のチェック
             while (j <= row){
-                if ((k-j*(row+1)) > 0 && (k-j*(row+1)) % row != 1){
+                if ((k-j*(row+1)) > 0 && (k-j*(row+1)) % row != 0){
                     num++;
                     if ($('#td_'+(k-j*(row+1))).html().indexOf(correct) < 0) {
                         flag = false;
                     }
                 }
-                if ((k+j*(row+1)) < MAX_COUNT && (k+j*(row+1))%row < 0){
+                if ((k+j*(row+1)) < MAX_COUNT && (k+j*(row+1))%row == 1){
                     num++;
                     if ($('#td_'+(k+j*(row+1))).html().indexOf(correct) < 0) {
                         flag = false;
